@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+import os
+import re
+import subprocess
+from gradelib import *
+
+r = Runner(save("xv6.out"))
+
+@test(0, "running alarmtest")
+def test_alarmtest():
+    r.run_qemu(shell_script([
+        'alarmtest'
+    ]))
+
+@test(15, "alarmtest: test0", parent=test_alarmtest)
+def test_alarmtest_test0():
+    r.match('^test0 passed$')
+
+@test(20, "alarmtest: test1", parent=test_alarmtest)
+def test_alarmtest_test1():
+    r.match('^\\.?test1 passed$')
+
+@test(10, "alarmtest: test2", parent=test_alarmtest)
+def test_alarmtest_test2():
+    r.match('^\\.?test2 passed$')
+
+@test(0, "running threadtest")
+def test_threadtest():
+    r.run_qemu(shell_script([
+        'threadtest'
+    ]))
+
+@test(20, "threadtest: testthreadrun", parent=test_threadtest)
+def test_threadtest_testthreadrun():
+    r.match('^testthreadrun passed$')
+
+@test(20, "threadtest: testthreadmore", parent=test_threadtest)
+def test_threadtest_testthreadmore():
+    r.match('^\\.?testthreadmore passed$')
+
+@test(5, "threadtest: testthreadsbrk", parent=test_threadtest)
+def test_threadtest_testthreadsbrk():
+    r.match('^\\.?testthreadsbrk passed$')
+
+@test(10, "usertests")
+def test_usertests():
+    r.run_qemu(shell_script([
+        'usertests'
+    ]), timeout=30000)
+    r.match('^ALL TESTS PASSED$')
+
+run_tests()
